@@ -1,0 +1,198 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: dev
+  namespace: kargo-helm-ff
+spec:
+  shard: kargo-agent
+  requestedFreight:
+  - origin:
+      kind: Warehouse
+      name: guestbook
+    sources:
+      direct: true
+  - origin:
+      kind: Warehouse
+      name: features
+    sources:
+      direct: true
+  promotionTemplate:
+    spec:
+      steps:
+      - uses: git-clone
+        config:
+          repoURL: https://github.com/dhpup/kargo-helm-ff.git
+          checkout:
+          - fromFreight: true
+            path: ./src
+          - branch: main
+            path: ./out
+
+      - uses: helm-update-image
+        as: update-image
+        config:
+          path: ./out/env/dev/values.yaml
+          images:
+          - image: ghcr.io/dhpup/guestbook
+            key: image.tag
+            value: Tag
+
+      - uses: copy
+        config:
+          inPath: ./src/base/feature-flags.yaml
+          outPath: ./out/env/dev/feature-flags.yaml
+
+      # Commit the changes to the Git repository.
+      - uses: git-commit
+        as: commit
+        config:
+          path: ./out
+          messageFromSteps:
+          - update-image
+
+      # Push the changes to the Git repository.
+      - uses: git-push
+        config:
+          path: ./out
+
+      - uses: argocd-update
+        config:
+          apps:
+          - name: kargo-helm-ff-dev
+            sources:
+            - repoURL: https://github.com/dhpup/kargo-helm-ff.git
+              desiredCommitFromStep: commit
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: staging
+  namespace: kargo-helm-ff
+spec:
+  shard: kargo-agent
+  requestedFreight:
+  - origin:
+      kind: Warehouse
+      name: guestbook
+    sources:
+      stages:
+      - dev
+  - origin:
+      kind: Warehouse
+      name: features
+    sources:
+      stages:
+      - dev
+  promotionTemplate:
+    spec:
+      steps:
+      - uses: git-clone
+        config:
+          repoURL: https://github.com/dhpup/kargo-helm-ff.git
+          checkout:
+          - fromFreight: true
+            path: ./src
+          - branch: main
+            path: ./out
+
+      - uses: helm-update-image
+        as: update-image
+        config:
+          path: ./out/env/staging/values.yaml
+          images:
+          - image: ghcr.io/dhpup/guestbook
+            key: image.tag
+            value: Tag
+
+      - uses: copy
+        config:
+          inPath: ./src/base/feature-flags.yaml
+          outPath: ./out/env/staging/feature-flags.yaml
+
+      # Commit the changes to the Git repository.
+      - uses: git-commit
+        as: commit
+        config:
+          path: ./out
+          messageFromSteps:
+          - update-image
+
+      # Push the changes to the Git repository.
+      - uses: git-push
+        config:
+          path: ./out
+
+      - uses: argocd-update
+        config:
+          apps:
+          - name: kargo-helm-ff-staging
+            sources:
+            - repoURL: https://github.com/dhpup/kargo-helm-ff.git
+              desiredCommitFromStep: commit
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prod
+  namespace: kargo-helm-ff
+spec:
+  shard: kargo-agent
+  requestedFreight:
+  - origin:
+      kind: Warehouse
+      name: guestbook
+    sources:
+      stages:
+      - staging
+  - origin:
+      kind: Warehouse
+      name: features
+    sources:
+      stages:
+      - staging
+  promotionTemplate:
+    spec:
+      steps:
+      - uses: git-clone
+        config:
+          repoURL: https://github.com/dhpup/kargo-helm-ff.git
+          checkout:
+          - fromFreight: true
+            path: ./src
+          - branch: main
+            path: ./out
+
+      - uses: helm-update-image
+        as: update-image
+        config:
+          path: ./out/env/prod/values.yaml
+          images:
+          - image: ghcr.io/dhpup/guestbook
+            key: image.tag
+            value: Tag
+
+      - uses: copy
+        config:
+          inPath: ./src/base/feature-flags.yaml
+          outPath: ./out/env/prod/feature-flags.yaml
+
+      # Commit the changes to the Git repository.
+      - uses: git-commit
+        as: commit
+        config:
+          path: ./out
+          messageFromSteps:
+          - update-image
+
+      # Push the changes to the Git repository.
+      - uses: git-push
+        config:
+          path: ./out
+
+      - uses: argocd-update
+        config:
+          apps:
+          - name: kargo-helm-ff-prod
+            sources:
+            - repoURL: https://github.com/dhpup/kargo-helm-ff.git
+              desiredCommitFromStep: commit
