@@ -8,7 +8,7 @@ spec:
     repoURL: https://github.com/reikamoon/eks-tutorial.git
     path: kargo
   destination:
-    name: kargo
+    server: https://cluster-kargo:6445
   syncPolicy:
     syncOptions:
     - CreateNamespace=true
