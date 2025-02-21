@@ -8,7 +8,7 @@ spec:
     repoURL: https://github.com/reikamoon/eks-tutorial.git
     path: kargo
   destination:
-    name: eks-workshop
+    name: kargo
   syncPolicy:
     syncOptions:
     - CreateNamespace=true
