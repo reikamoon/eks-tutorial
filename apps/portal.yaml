@@ -11,7 +11,7 @@ spec:
     targetRevision: HEAD
   destination:
     namespace: portal
-    name: eks
+    name: anjelica-test
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
