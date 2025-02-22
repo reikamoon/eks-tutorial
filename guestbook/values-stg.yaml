@@ -1,2 +1,2 @@
-service:
-  type: NodePort
+image:
+  tag: 0.1.0
