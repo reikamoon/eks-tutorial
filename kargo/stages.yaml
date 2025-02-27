@@ -2,7 +2,7 @@ apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
   name: dev
-  namespace: kargo-helm-ff
+  namespace: kargo-helm
 spec:
   shard: kargo-agent
   requestedFreight:
@@ -63,7 +63,7 @@ spec:
             apps:
             - name: kargo-helm-ff-dev
               sources:
-              - repoURL: https://github.com/dhpup/kargo-helm-ff.git
+              - repoURL: https://github.com/reikamoon/eks-tutorial.git
             -  desiredRevision: ${{ outputs.commit.commit }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -91,7 +91,7 @@ spec:
       steps:
       - uses: git-clone
         config:
-          repoURL: https://github.com/dhpup/kargo-helm-ff.git
+          repoURL: https://github.com/reikamoon/eks-tutorial.git
           checkout:
           - fromFreight: true
             path: ./src
@@ -130,7 +130,7 @@ spec:
           apps:
           - name: kargo-helm-ff-staging
             sources:
-            - repoURL: https://github.com/dhpup/kargo-helm-ff.git
+            - repoURL: https://github.com/reikamoon/eks-tutorial.git
               desiredCommitFromStep: commit
 ---
 apiVersion: kargo.akuity.io/v1alpha1
@@ -158,7 +158,7 @@ spec:
       steps:
       - uses: git-clone
         config:
-          repoURL: https://github.com/dhpup/kargo-helm-ff.git
+          repoURL: https://github.com/reikamoon/eks-tutorial.git
           checkout:
           - fromFreight: true
             path: ./src
@@ -197,5 +197,5 @@ spec:
           apps:
           - name: kargo-helm-ff-prod
             sources:
-            - repoURL: https://github.com/dhpup/kargo-helm-ff.git
+            - repoURL: https://github.com/reikamoon/eks-tutorial.git
               desiredCommitFromStep: commit

@@ -3,6 +3,8 @@ kind: Application
 metadata:
   name: guestbook-dev
   namespace: argocd
+  annotations:
+    kargo.akuity.io/authorized-stage: kargo-helm:dev
 spec:
   project: default
   source:

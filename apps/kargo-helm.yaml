@@ -1,0 +1,14 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kargo-helm
+spec:
+  project: kargo-helm
+  source:
+    repoURL: https://github.com/reikamoon/eks-tutorial.git
+    path: kargo
+  destination:
+    name: kargo
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
