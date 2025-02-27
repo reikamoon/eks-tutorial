@@ -1,10 +1,9 @@
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Warehouse
 metadata:
-  name: features
-  namespace: kargo-helm
+  name: base
+  namespace: kargo-demo
 spec:
-  shard: kargo-agent
   subscriptions:
   - git:
       branch: main
@@ -12,4 +11,4 @@ spec:
       discoveryLimit: 20
       repoURL: https://github.com/reikamoon/eks-tutorial.git
       includePaths:
-      - base/feature-flags.yaml
+      - base/values.yaml

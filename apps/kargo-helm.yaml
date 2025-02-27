@@ -1,9 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kargo-helm
+  name: kargo-demo
+  namespace: argocd
 spec:
-  project: kargo-helm
+  project: demo
   source:
     repoURL: https://github.com/reikamoon/eks-tutorial.git
     path: kargo

@@ -2,115 +2,34 @@ apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
   name: dev
-  namespace: kargo-helm
+  namespace: kargo-guestbook
 spec:
-  shard: kargo-agent
   requestedFreight:
   - origin:
       kind: Warehouse
-      name: guestbook
-    sources:
-      direct: true
-  - origin:
-      kind: Warehouse
-      name: Features
+      name: base
     sources:
       direct: true
   promotionTemplate:
     spec:
       vars:
-        - name: gitRepo
-          value: https://github.com/reikamoon/eks-tutorial.git
-      steps:
-        - config:
-            checkout:
-              - commit: ${{ commitFrom(vars.gitRepo, warehouse("base")).ID }}
-                path: ./src
-              - branch: main
-                path: ./out
-            repoURL: ${{ vars.gitRepo }}
-          uses: git-clone
-
-        - uses: helm-update-image
-          as: update-image
-          config:
-            path: ./out/env/dev/values.yaml
-            images:
-            - image: ghcr.io/dhpup/guestbook
-              key: image.tag
-              value: Tag
-
-        - uses: copy
-          config:
-            inPath: ./src/base/feature-flags.yaml
-            outPath: ./out/env/dev/feature-flags.yaml
-
-        # Commit the changes to the Git repository.
-        - uses: git-commit
-          as: commit
-          config:
-            path: ./out
-            messageFromSteps:
-            - update-image
-
-        # Push the changes to the Git repository.
-        - uses: git-push
-          config:
-            path: ./out
-
-        - uses: argocd-update
-          config:
-            apps:
-            - name: kargo-helm-ff-dev
-              sources:
-              - repoURL: https://github.com/reikamoon/eks-tutorial.git
-            -  desiredRevision: ${{ outputs.commit.commit }}
----
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Stage
-metadata:
-  name: staging
-  namespace: kargo-helm-ff
-spec:
-  shard: kargo-agent
-  requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: guestbook
-    sources:
-      stages:
-      - dev
-  - origin:
-      kind: Warehouse
-      name: features
-    sources:
-      stages:
-      - dev
-  promotionTemplate:
-    spec:
+      - name: gitRepo
+        value: https://github.com/reikamoon/eks-tutorial.git
       steps:
       - uses: git-clone
         config:
-          repoURL: https://github.com/reikamoon/eks-tutorial.git
           checkout:
-          - fromFreight: true
+          - commit: ${{ commitFrom(vars.gitRepo, warehouse("base")).ID }}
             path: ./src
           - branch: main
             path: ./out
+          repoURL: ${{ vars.gitRepo }}
 
-      - uses: helm-update-image
-        as: update-image
-        config:
-          path: ./out/env/staging/values.yaml
-          images:
-          - image: ghcr.io/dhpup/guestbook
-            key: image.tag
-            value: Tag
 
       - uses: copy
         config:
-          inPath: ./src/base/feature-flags.yaml
-          outPath: ./out/env/staging/feature-flags.yaml
+          inPath: ./src/base/values.yaml
+          outPath: ./out/guestbook/values-dev.yaml
 
       # Commit the changes to the Git repository.
       - uses: git-commit
@@ -128,56 +47,43 @@ spec:
       - uses: argocd-update
         config:
           apps:
-          - name: kargo-helm-ff-staging
+          - name: guestbook-dev
             sources:
             - repoURL: https://github.com/reikamoon/eks-tutorial.git
-              desiredCommitFromStep: commit
+              desiredRevision: ${{ outputs.commit.commit }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
-  name: prod
-  namespace: kargo-helm-ff
+  name: stg
+  namespace: kargo-guestbook
 spec:
-  shard: kargo-agent
   requestedFreight:
   - origin:
       kind: Warehouse
-      name: guestbook
+      name: base
     sources:
       stages:
-      - staging
-  - origin:
-      kind: Warehouse
-      name: features
-    sources:
-      stages:
-      - staging
+      - dev
   promotionTemplate:
     spec:
+      vars:
+      - name: gitRepo
+        value: https://github.com/reikamoon/eks-tutorial.git
       steps:
       - uses: git-clone
         config:
-          repoURL: https://github.com/reikamoon/eks-tutorial.git
           checkout:
-          - fromFreight: true
+          - commit: ${{ commitFrom(vars.gitRepo, warehouse("base")).ID }}
             path: ./src
           - branch: main
             path: ./out
-
-      - uses: helm-update-image
-        as: update-image
-        config:
-          path: ./out/env/prod/values.yaml
-          images:
-          - image: ghcr.io/dhpup/guestbook
-            key: image.tag
-            value: Tag
+          repoURL: ${{ vars.gitRepo }}
 
       - uses: copy
         config:
-          inPath: ./src/base/feature-flags.yaml
-          outPath: ./out/env/prod/feature-flags.yaml
+          inPath: ./src/base/values.yaml
+          outPath: ./out/guestbook/values-stg.yaml
 
       # Commit the changes to the Git repository.
       - uses: git-commit
@@ -195,7 +101,61 @@ spec:
       - uses: argocd-update
         config:
           apps:
-          - name: kargo-helm-ff-prod
+          - name: guestbook-stg
             sources:
             - repoURL: https://github.com/reikamoon/eks-tutorial.git
-              desiredCommitFromStep: commit
+              desiredRevision: ${{ outputs.commit.commit }}
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prd
+  namespace: kargo-guestbook
+spec:
+  requestedFreight:
+  - origin:
+      kind: Warehouse
+      name: base
+    sources:
+      stages:
+      - stg
+  promotionTemplate:
+    spec:
+      vars:
+      - name: gitRepo
+        value: https://github.com/reikamoon/eks-tutorial.git
+      steps:
+      - uses: git-clone
+        config:
+          checkout:
+          - commit: ${{ commitFrom(vars.gitRepo, warehouse("base")).ID }}
+            path: ./src
+          - branch: main
+            path: ./out
+          repoURL: ${{ vars.gitRepo }}
+
+      - uses: copy
+        config:
+          inPath: ./src/base/values.yaml
+          outPath: ./out/guestbook/values-prd.yaml
+
+      # Commit the changes to the Git repository.
+      - uses: git-commit
+        as: commit
+        config:
+          path: ./out
+          messageFromSteps:
+          - update-image
+
+      # Push the changes to the Git repository.
+      - uses: git-push
+        config:
+          path: ./out
+
+      - uses: argocd-update
+        config:
+          apps:
+          - name: guestbook-prd
+            sources:
+            - repoURL: https://github.com/reikamoon/eks-tutorial.git
+              desiredRevision: ${{ outputs.commit.commit }}

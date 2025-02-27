@@ -4,9 +4,9 @@ metadata:
   name: guestbook-stg
   namespace: argocd
   annotations:
-    kargo.akuity.io/authorized-stage: kargo-helm:stg
+    kargo.akuity.io/authorized-stage: kargo-demo:stg
 spec:
-  project: default
+  project: demo
   source:
     repoURL: 'https://github.com/reikamoon/eks-tutorial'
     path: guestbook

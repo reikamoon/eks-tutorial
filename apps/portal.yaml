@@ -4,7 +4,7 @@ metadata:
   name: portal
   namespace: argocd
 spec:
-  project: default
+  project: demo
   source:
     repoURL: 'https://github.com/reikamoon/eks-tutorial'
     path: portal
