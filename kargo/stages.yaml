@@ -18,15 +18,18 @@ spec:
       direct: true
   promotionTemplate:
     spec:
-      steps:
-      - uses: git-clone
-        config:
-          repoURL: https://github.com/dhpup/kargo-helm-ff.git
-          checkout:
-          - fromFreight: true
-            path: ./src
-          - branch: main
-            path: ./out
+      vars:
+        - name: gitRepo
+          value: https://github.com/reikamoon/eks-tutorial.git
+     steps:
+        - config:
+            checkout:
+              - commit: ${{ commitFrom(vars.gitRepo, warehouse("base")).ID }}
+                path: ./src
+              - branch: main
+                path: ./out
+            repoURL: ${{ vars.gitRepo }}
+          uses: git-clone
 
       - uses: helm-update-image
         as: update-image
@@ -61,7 +64,7 @@ spec:
           - name: kargo-helm-ff-dev
             sources:
             - repoURL: https://github.com/dhpup/kargo-helm-ff.git
-              desiredCommitFromStep: commit
+           -  desiredRevision: ${{ outputs.commit.commit }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
