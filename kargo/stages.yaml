@@ -13,7 +13,7 @@ spec:
       direct: true
   - origin:
       kind: Warehouse
-      name: features
+      name: Features
     sources:
       direct: true
   promotionTemplate:
