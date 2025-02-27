@@ -16,7 +16,7 @@ spec:
         - values-dev.yaml
   destination:
     namespace: guestbook-dev
-    name: eks
+    name: anjelica-test
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

@@ -16,7 +16,7 @@ spec:
         - values-stg.yaml
   destination:
     namespace: guestbook-stg
-    name: eks
+    name: anjelica-test
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
